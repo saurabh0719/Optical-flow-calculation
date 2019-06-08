@@ -2,6 +2,14 @@
 
 using namespace std;
 
+#define W 854				// Frame width
+#define H 480				// Frame height
+#define maxFeatures 4		// Maximum number of corners per frame
+#define maxFeaturesH 2
+#define maxFeaturesW (maxFeatures/maxFeaturesH)
+#define Threshold 250000	// 5150000 for city drone video // 1250000 for beach highway drone video
+#define corner_count 4
+
 /*******************GAUSSIAN FILTER****************************************************************/
 
 //Function to create Gaussian filter 
@@ -161,7 +169,7 @@ bool inverse(int A[N][N], float inverse[N][N])
 
 /*************************MATRIX MULTIPLICATION****************************************************/
 
-#define N 4 
+//#define N 4 
   
 // This function multiplies  
 // mat1[][] and mat2[][], and  
@@ -185,9 +193,11 @@ void multiply(int mat1[][N],
 
 /**************************************************************************************************/
 
-int main()
-{
-    int status[4] = {0,0,0,0};
-    
+
+// pass int status[4] = {0,0,0,0};
+//pass the matrices for both frames;
+
+void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputquad[corner_count][2], int outputquad[corner_count][2])
+{   
     return 0;
 }
