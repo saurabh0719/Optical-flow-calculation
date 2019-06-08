@@ -4,7 +4,7 @@ using namespace std;
 
 /*******************GAUSSIAN FILTER****************************************************************/
 
-// Function to create Gaussian filter 
+//Function to create Gaussian filter 
 void FilterCreation(double GKernel[][5]) 
 { 
     // intialising standard deviation to 1.0 
