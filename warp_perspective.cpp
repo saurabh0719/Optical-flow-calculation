@@ -21,8 +21,8 @@ void warp_perspective(unsigned char next[H][W], unsigned char transframe[H][W], 
   for(int i =0; i<W; i++)
   for(int j =0; j<H; j++)
   {
-    x = (transmat[1][1]*i + transmat[1][2]*j + transmat[1][3])/(transmat[3][1]*i + transmat[3][2]*j + transmat[3][3]);
-    y = (transmat[2][1]*i + transmat[2][2]*j + transmat[2][3])/(transmat[3][1]*i + transmat[3][2]*j + transmat[3][3]);
+    x = (transmat[0][0]*i + transmat[0][1]*j + transmat[0][2])/(transmat[2][0]*i + transmat[2][1]*j + transmat[2][2]);
+    y = (transmat[1][0]*i + transmat[1][1]*j + transmat[1][2])/(transmat[2][0]*i + transmat[2][1]*j + transmat[2][2]);
     transframe[i][j] = (unsigned char)(next[x][y]);
   }
 }
