@@ -10,35 +10,11 @@ using namespace std;
 // #define Threshold 250000	// 5150000 for city drone video // 1250000 for beach highway drone video
 #define corner_count 4
 #define window 9
+
+/*******************SOBEL FILTER****************************************************************/
+
 int sobel_x[3][3]={{-1,-2,-1},{0,0,0},{1,2,1}};
 int sobel_y[3][3]={{-1,0,1},{-2,0,2},{-1,0,1}};
-
-/*******************GAUSSIAN FILTER****************************************************************/
-
-//Function to create Gaussian filter
-void FilterCreation(double GKernel[][5])
-{
-    // intialising standard deviation to 1.0
-    double sigma = 1.0;
-    double r, s = 2.0 * sigma * sigma;
-
-    // sum is for normalization
-    double sum = 0.0;
-
-    // generating 5x5 kernel
-    for (int x = -2; x <= 2; x++) {
-        for (int y = -2; y <= 2; y++) {
-            r = sqrt(x * x + y * y);
-            GKernel[x + 2][y + 2] = (exp(-(r * r) / s)) / (M_PI * s);
-            sum += GKernel[x + 2][y + 2];
-        }
-    }
-
-    // normalising the Kernel
-    for (int i = 0; i < 5; ++i)
-        for (int j = 0; j < 5; ++j)
-            GKernel[i][j] /= sum;
-}
 
 /**************************************************************************************************/
 
@@ -243,11 +219,11 @@ void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputqua
     int Iy[window] ={0};
     int It[window] ={0}; // also the t vector of the equation
     //store the negative values directly in this ( -It)
-    
+
 
     int i =0;
     int x,y;
-    
+
     int pixel_x,pixel_y,pixel_t;
     while(i< corner_count)
     {
@@ -256,10 +232,12 @@ void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputqua
       //calculate Ix[9] Iy[9] and It[9] for each corner
 
 /*******************CALCULATIONS********************************/
+
+//calculation of Ix Iy and It (using sobel filter)
 	x=inputquad[i][0];
 	y=inputquad[i][1];
 	 int k=0;
-         
+
 	for(int p=x-1;p<=x+1;p++)
 	{
 		for(int q=y-1;q<=y+1;q++)
@@ -283,12 +261,12 @@ void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputqua
                     + (sobel_y[2][0] * ref[p+1][q-1])
                     + (sobel_y[2][1] * ref[p+1][q])
                     + (sobel_y[2][2] * ref[p+1][q+1]);
-            
-	    
+
+
             Ix[k]=pixel_x;
             Iy[k]=pixel_y;
             k++;
-            
+
         }
        }
         k=0;
@@ -297,9 +275,11 @@ void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputqua
         	for(int q=y-1;q<=y+1;q++)
         	{
        			It[k]=-(next[p][q]-ref[p][q]);
-       			k++;	
+       			k++;
         	}
         }
+
+      //least squares method 
 
       int S[window][2];
 
