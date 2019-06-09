@@ -2,14 +2,16 @@
 
 using namespace std;
 
-#define W 854				// Frame width
-#define H 480				// Frame height
-// #define maxFeatures 4		// Maximum number of corners per frame
+#define W 854				// ref width
+#define H 480				// ref height
+// #define maxFeatures 4		// Maximum number of corners per ref
 // #define maxFeaturesH 2
 // #define maxFeaturesW (maxFeatures/maxFeaturesH)
 // #define Threshold 250000	// 5150000 for city drone video // 1250000 for beach highway drone video
 #define corner_count 4
 #define window 9
+int sobel_x[3][3]={{-1,-2,-1},{0,0,0},{1,2,1}};
+int sobel_y[3][3]={{-1,0,1},{-2,0,2},{-1,0,1}};
 
 /*******************GAUSSIAN FILTER****************************************************************/
 
@@ -232,7 +234,7 @@ void multiply_final(int mat1[][window],
 
 
 // pass int status[corner_count] = {0};
-//pass the matrices for both frames;
+//pass the matrices for both refs;
 
 void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputquad[corner_count][2], int outputquad[corner_count][2], int status[corner_count], String err)
 {
@@ -241,8 +243,12 @@ void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputqua
     int Iy[window] ={0};
     int It[window] ={0}; // also the t vector of the equation
     //store the negative values directly in this ( -It)
+    
 
     int i =0;
+    int x,y;
+    
+    int pixel_x,pixel_y,pixel_t;
     while(i< corner_count)
     {
 
@@ -250,6 +256,50 @@ void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputqua
       //calculate Ix[9] Iy[9] and It[9] for each corner
 
 /*******************CALCULATIONS********************************/
+	x=inputquad[i][0];
+	y=inputquad[i][1];
+	 int k=0;
+         
+	for(int p=x-1;p<=x+1;p++)
+	{
+		for(int q=y-1;q<=y+1;q++)
+		{
+            pixel_x = (sobel_x[0][0] * ref[p-1][q-1])
+                    + (sobel_x[0][1] * ref[p-1][q])
+                    + (sobel_x[0][2] * ref[p-1][q+1])
+                    + (sobel_x[1][0] * ref[p][q-1])
+                    + (sobel_x[1][1] * ref[p][q])
+                    + (sobel_x[1][2] * ref[p][q+1])
+                    + (sobel_x[2][0] * ref[p+1][q-1])
+                    + (sobel_x[2][1] * ref[p+1][q])
+                    + (sobel_x[2][2] * ref[p+1][q+1]);
+
+            pixel_y = (sobel_y[0][0] * ref[p-1][q-1])
+                    + (sobel_y[0][1] * ref[p-1][q])
+                    + (sobel_y[0][2] * ref[p-1][q+1])
+                    + (sobel_y[1][0] * ref[p][q-1])
+                    + (sobel_y[1][1] * ref[p][q])
+                    + (sobel_y[1][2] * ref[p][q+1])
+                    + (sobel_y[2][0] * ref[p+1][q-1])
+                    + (sobel_y[2][1] * ref[p+1][q])
+                    + (sobel_y[2][2] * ref[p+1][q+1]);
+            
+	    
+            Ix[k]=pixel_x;
+            Iy[k]=pixel_y;
+            k++;
+            
+        }
+       }
+        k=0;
+        for(int p=x-1;p<=x+1;p++)
+        {
+        	for(int q=y-1;q<=y+1;q++)
+        	{
+       			It[k]=-(next[p][q]-ref[p][q]);
+       			k++;	
+        	}
+        }
 
       int S[window][2];
 
@@ -289,6 +339,7 @@ void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputqua
       outputquad[i][1] = res[1][0];
 
       status[i] = 1; //set status flag to 1
+      i++;
 
     }
 
