@@ -4,10 +4,10 @@ using namespace std;
 
 #define W 854				// Frame width
 #define H 480				// Frame height
-#define maxFeatures 4		// Maximum number of corners per frame
-#define maxFeaturesH 2
-#define maxFeaturesW (maxFeatures/maxFeaturesH)
-#define Threshold 250000	// 5150000 for city drone video // 1250000 for beach highway drone video
+// #define maxFeatures 4		// Maximum number of corners per frame
+// #define maxFeaturesH 2
+// #define maxFeaturesW (maxFeatures/maxFeaturesH)
+// #define Threshold 250000	// 5150000 for city drone video // 1250000 for beach highway drone video
 #define corner_count 4
 #define window 9
 
@@ -212,7 +212,7 @@ void multiply_2(int mat1[][2],
 
 
 void multiply_final(int mat1[][window],
-              int mat2[][1],
+              int mat2[window],
               int res[2][1])
 {
     int i, j, k;
@@ -223,7 +223,7 @@ void multiply_final(int mat1[][window],
             res[i][j] = 0;
             for (k = 0; k < window; k++)
                 res[i][j] += mat1[i][k] *
-                             mat2[k][j];
+                             mat2[k];
         }
     }
 }
@@ -239,14 +239,17 @@ void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputqua
 
     int Ix[window] ={0};
     int Iy[window] ={0};
-    int It[window][1] ={0}; // also the t vector of the equation
+    int It[window] ={0}; // also the t vector of the equation
     //store the negative values directly in this ( -It)
 
     int i =0;
     while(i< corner_count)
     {
+
       // (u v)t = (StS)^-1 * St. tvector
       //calculate Ix[9] Iy[9] and It[9] for each corner
+
+/*******************CALCULATIONS********************************/
 
       int S[window][2];
 
@@ -280,8 +283,12 @@ void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputqua
 
       multiply_final(S_final, It, res);
 
-      outputquad[i][0] = res[0][0];
+/*********************************************************************/
+
+      outputquad[i][0] = res[0][0]; //storing final values of the corner in output quad
       outputquad[i][1] = res[1][0];
+
+      status[i] = 1; //set status flag to 1
 
     }
 
