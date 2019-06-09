@@ -197,7 +197,7 @@ void multiply(int mat1[][N],
 // pass int status[corner_count] = {0};
 //pass the matrices for both frames;
 
-void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputquad[corner_count][2], int outputquad[corner_count][2], int status[corner_count])
+void opticalFlow(unsigned char ref[][W], unsigned char next[][W], int inputquad[][2], int outputquad[][2], int status[],int corner_count,int H)
 {   
     return 0;
 }
