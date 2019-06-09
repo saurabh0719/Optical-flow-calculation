@@ -175,7 +175,7 @@ bool inverse(int A[2][2], float inverse[2][2])
 // This function multiplies
 // mat1[][] and mat2[][], and
 // stores the result in res[][]
-void multiply(int mat1[][window],
+void multiply_1(int mat1[][window],
               int mat2[][2],
               int res[2][2])
 {
@@ -183,6 +183,42 @@ void multiply(int mat1[][window],
     for (i = 0; i < 2; i++)
     {
         for (j = 0; j < 2; j++)
+        {
+            res[i][j] = 0;
+            for (k = 0; k < window; k++)
+                res[i][j] += mat1[i][k] *
+                             mat2[k][j];
+        }
+    }
+}
+
+
+void multiply_2(int mat1[][2],
+              int mat2[][window],
+              int res[2][window])
+{
+    int i, j, k;
+    for (i = 0; i < 2; i++)
+    {
+        for (j = 0; j < window; j++)
+        {
+            res[i][j] = 0;
+            for (k = 0; k < 2; k++)
+                res[i][j] += mat1[i][k] *
+                             mat2[k][j];
+        }
+    }
+}
+
+
+void multiply_final(int mat1[][window],
+              int mat2[][1],
+              int res[2][1])
+{
+    int i, j, k;
+    for (i = 0; i < 2; i++)
+    {
+        for (j = 0; j < 1; j++)
         {
             res[i][j] = 0;
             for (k = 0; k < window; k++)
@@ -203,7 +239,8 @@ void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputqua
 
     int Ix[window] ={0};
     int Iy[window] ={0};
-    int It[window] ={0}; // also the t vector of the equation
+    int It[window][1] ={0}; // also the t vector of the equation
+    //store the negative values directly in this ( -It)
 
     int i =0;
     while(i< corner_count)
@@ -225,7 +262,7 @@ void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputqua
 
       int STS[2][2];// stores S transpose * S
 
-      multiply(ST,S,STS);
+      multiply_1(ST,S,STS);
 
       float STS_inverse[2][2];
 
@@ -234,6 +271,17 @@ void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputqua
         err = "Couldn't find inverse of the singular matrix";
         break;
       }
+
+      float S_final[2][window];
+
+      multiply_2(STS_inverse,ST, S_final);
+
+      float res[2][1];
+
+      multiply_final(S_final, It, res);
+
+      outputquad[i][0] = res[0][0];
+      outputquad[i][1] = res[1][0];
 
     }
 
