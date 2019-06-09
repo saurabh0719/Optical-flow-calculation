@@ -1,7 +1,3 @@
-#include <bits/stdc++.h>
-
-using namespace std;
-
 #define W 854				// ref width
 #define H 480				// ref height
 // #define maxFeatures 4		// Maximum number of corners per ref
@@ -279,7 +275,7 @@ void opticalFlow(unsigned char ref[H][W], unsigned char next[H][W], int inputqua
         	}
         }
 
-      //least squares method 
+      //least squares method
 
       int S[window][2];
 
