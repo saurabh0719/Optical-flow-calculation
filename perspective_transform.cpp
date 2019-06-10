@@ -18,7 +18,7 @@ dst(i)=(x′i,y′i),src(i)=(xi,yi),i=0,1,2,3 */
 
 // Function to get cofactor of A[p][q] in temp[][]. n is current
 // dimension of A[][]
-void getCofactor(int A[2][2], int temp[2][2], int p, int q, int n)
+void getCofactor(int A[8][8], int temp[8][8], int p, int q, int n)
 {
     int i = 0, j = 0;
 
@@ -47,7 +47,7 @@ void getCofactor(int A[2][2], int temp[2][2], int p, int q, int n)
 
 /* Recursive function for finding determinant of matrix.
    n is current dimension of A[][]. */
-int determinant(int A[2][2], int n)
+int determinant(int A[8][8], int n)
 {
     int D = 0; // Initialize result
 
@@ -74,7 +74,7 @@ int determinant(int A[2][2], int n)
 }
 
 // Function to get adjoint of A[N][N] in adj[N][N].
-void adjoint(int A[2][2],int adj[2][2], int N)
+void adjoint(int A[8][8],int adj[8][8], int N)
 {
     if (N == 1)
     {
@@ -105,10 +105,10 @@ void adjoint(int A[2][2],int adj[2][2], int N)
 
 // Function to calculate and store inverse, returns false if
 // matrix is singular
-bool inverse(int A[2][2], float inverse[2][2])
+bool inverse(int A[8][8], float inverse[8][8])
 {
     // Find determinant of A[][]
-    int det = determinant(A, 2);
+    int det = determinant(A, 8);
     if (det == 0)
     {
         //cout << "Singular matrix, can't find its inverse";
@@ -116,19 +116,18 @@ bool inverse(int A[2][2], float inverse[2][2])
     }
 
     // Find adjoint
-    int adj[2][2];
-    adjoint(A, adj, 2);
+    int adj[8][8];
+    adjoint(A, adj, 8);
 
     // Find Inverse using formula "inverse(A) = adj(A)/det(A)"
-    for (int i=0; i<2; i++)
-        for (int j=0; j<2; j++)
+    for (int i=0; i<8; i++)
+        for (int j=0; j<8; j++)
             inverse[i][j] = adj[i][j]/float(det);
 
     return true;
 }
 
 /**************************************************************************************************/
-
 
 /*************************MATRIX MULTIPLICATION****************************************************/
 
@@ -137,20 +136,16 @@ bool inverse(int A[2][2], float inverse[2][2])
 // This function multiplies
 // mat1[][] and mat2[][], and
 // stores the result in res[][]
-void multiply(int mat1[][window],
-              int mat2[][2],
-              int res[2][2])
+void multiply(int mat1[8][8],
+              int mat2[8],
+              int res[8])
 {
     int i, j, k;
-    for (i = 0; i < 2; i++)
+    for (i = 0; i < 8; i++)
     {
-        for (j = 0; j < 2; j++)
-        {
-            res[i][j] = 0;
-            for (k = 0; k < window; k++)
-                res[i][j] += mat1[i][k] *
-                             mat2[k][j];
-        }
+            for (k = 0; k < 8; k++)
+                res[i] += mat1[i][k] *
+                             mat2[k];
     }
 }
 
@@ -194,6 +189,25 @@ void perspective_transform(int inputquad[corner_count][2], int outputquad[corner
 
   //finding inverse of X matrix
 
+  float X_inverse[8][8] = {0};
 
+  if(!inverse(X, X_inverse))
+  cout<<"Error";
+
+  multiply(X_inverse, U, C);
+
+  //construct transmat from C
+
+  float transmat[3][3] = {0};
+
+    transmat[0][0] = C[0];
+    transmat[0][1] = C[1];
+    transmat[0][2] = C[2];
+    transmat[1][0] = C[3];
+    transmat[1][1] = C[4];
+    transmat[1][2] = C[5];
+    transmat[2][0] = C[6];
+    transmat[2][1] = C[7];
+    transmat[2][2] = 1;
 
 }
