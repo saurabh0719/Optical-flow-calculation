@@ -11,7 +11,7 @@ using namespace std;
 #define maxFeatures 4		// Maximum number of corners per frame
 #define maxFeaturesH 2
 #define maxFeaturesW (maxFeatures/maxFeaturesH)
-#define Threshold 250000	// 5150000 for city drone video // 1250000 for beach highway drone video
+#define Threshold 1250000	// 5150000 for city drone video // 1250000 for beach highway drone video
 #define window 9
 
 float Ix[H][W] = {0};
@@ -657,6 +657,7 @@ void shi_tomasi(FEATURES corners[maxFeatures], unsigned char Frame[H][W])
 		}
 
 	// Find distinct corners
+  int count=0;
 	for (y=SobelFilterSize+H/5 ; y<H-SobelFilterSize ; ++y)
 	{
 		for (x=SobelFilterSize ; x<W-SobelFilterSize ; ++x)
@@ -687,11 +688,12 @@ void shi_tomasi(FEATURES corners[maxFeatures], unsigned char Frame[H][W])
 				corners[featureIdx].x = x;
 				corners[featureIdx].y = y;
 				corners[featureIdx].value = minEigenval;
+        count++;
 			}
 		}
 	}
 
-	cout << endl;
+	cout <<count<< endl;
 }
 
 
