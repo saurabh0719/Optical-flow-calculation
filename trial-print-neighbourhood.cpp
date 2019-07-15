@@ -27,9 +27,6 @@ unsigned char diffFrame[H][W];
 int  inputQuad[maxFeatures][2];
 int outputQuad[maxFeatures][2];
 
-
-
-
 typedef struct FEATURES
 {
 	int x;
@@ -37,6 +34,77 @@ typedef struct FEATURES
 	long value;
 }FEATURES;
 
+
+void getCofactor3(int A[][7],int temp[][7],int p,int q,int n)
+{
+    int i = 0, j = 0;
+
+    // Looping for each element of the matrix
+    for (int row = 0; row < n; row++)
+    {
+        for (int col = 0; col < n; col++)
+        {
+            //  Copying into temporary matrix only those element
+            //  which are not in given row and column
+            if (row != p && col != q)
+            {
+                temp[i][j++] = A[row][col];
+
+                // Row is filled, so increase row index and
+                // reset col index
+                if (j == n - 1)
+                {
+                    j = 0;
+                    i++;
+                }
+            }
+        }
+    }
+}
+
+int determinant3(int A[][7], int n)
+{
+    int D = 0; // Initialize result
+
+    //  Base case : if matrix contains single element
+    if (n == 1)
+        return A[0][0];
+
+    int temp[7][7]; // To store cofactors
+
+    int sign = 1;  // To store sign multiplier
+
+     // Iterate for each element of first row
+    for (int f = 0; f < n; f++)
+    {
+        // Getting Cofactor of A[0][f]
+        getCofactor3(A, temp, 0, f, n);
+        D += sign * A[0][f] * determinant3(temp, n - 1);
+
+        // terms are to be added with alternate sign
+        sign = -sign;
+    }
+
+    return D;
+}
+
+bool check_invertibility(int x, int y, unsigned char Frame[H][W])
+{
+  int arr[7][7];
+  for(int i =-3; i<4; i++)
+  {
+    for(int j =-3; j<4; j++)
+    {
+      arr[i+3][j+3] = (int)Frame[x+i][y+j];
+    }
+  }
+
+  int res = determinant3(arr,7);
+
+  if(res == 0)
+  return false;
+  else return true;
+}
 
 void shi_tomasi(FEATURES corners[maxFeatures], unsigned char Frame[H][W])
 {
@@ -49,7 +117,6 @@ void shi_tomasi(FEATURES corners[maxFeatures], unsigned char Frame[H][W])
 
 	int blockSizeByTwo = 1;
 	int SobelFilterSize = 3;
-
 
 
 	// dx (sobel filter) is created such that it is already rotated by 180 for convolution
@@ -96,15 +163,14 @@ void shi_tomasi(FEATURES corners[maxFeatures], unsigned char Frame[H][W])
 		}
 
 	// Find distinct corners
+  int count=0;
 	for (y=SobelFilterSize+H/5 ; y<H-SobelFilterSize ; ++y)
 	{
-
 		for (x=SobelFilterSize ; x<W-SobelFilterSize ; ++x)
 		{
 			M[0] = M[1] = M[2] = M[3] = 0;
 
 			for(v=y-blockSizeByTwo ; v<=y+blockSizeByTwo ; v++)
-
 		   		for(u=x-blockSizeByTwo; u<=x+blockSizeByTwo; u++)
 		   		{
 		  			M[0] += Ix[v][u];
@@ -123,17 +189,18 @@ void shi_tomasi(FEATURES corners[maxFeatures], unsigned char Frame[H][W])
 
 			minEigenval = min(eigenval[0],eigenval[1]);
 
-			if(corners[featureIdx].value < minEigenval)
+			if(corners[featureIdx].value < minEigenval && check_invertibility(x,y,Frame))
 			{
+
 				corners[featureIdx].x = x;
 				corners[featureIdx].y = y;
 				corners[featureIdx].value = minEigenval;
-
+        count++;
 			}
-
 		}
 	}
 
+	//cout <<count<< endl;
 }
 
 
@@ -182,28 +249,18 @@ int main()
 				    inputQuad[2][1] =  cornersRef[2].y;
 				    inputQuad[3][1] =  cornersRef[3].y;
 
-					int element;
-					int flag =0;
-					int flag_check = 0;
+										cout<<"processing frame number "<<frame_count<<endl;
 					for(int k =0; k<4; k++)
 					{
-						element = (int)refFrame[inputQuad[k][0]-1][inputQuad[k][1]-1];
-					for(int i = -3; i<4 && flag ==0; i++)
-					for(int j =-3; j<4 && flag==0; j++)
+						cout<<"corner from quad "<<(k+1)<<endl;
+					for(int i = -3; i<4; i++)
+					for(int j =-3; j<4; j++)
 					{
-						if(element != (int)refFrame[inputQuad[k][0]+i][inputQuad[k][1]+j])
-						{
-							flag_check+=1;
-							flag=1;
-						}
+						cout<<(int)refFrame[inputQuad[k][0]+i][inputQuad[k][1]+j]<< " ";
 					}
-          flag =0;
+          cout<<endl<<endl;
 					}
-					cout<<"processing frame number "<<frame_count<<endl;
-					if(flag_check==4)
-					cout<<"frame number "<<frame_count<<" eligible"<<endl;
 
-					flag_check =0;
 
 				}
 

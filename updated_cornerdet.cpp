@@ -500,7 +500,95 @@ void multiply(float mat1[8][8],
 
 /**************************************************************************************************/
 
+void getPerspectiveTransform(int inputquad[maxFeatures][2], int outputquad[maxFeatures][2], int transfMat[3][3])
+{
+  int U[8] = {0};
+  int C[8] = {0}; //trans mat
+  int X[8][8] = {0};
 
+  // constructing the matrices
+  for(int i = 0; i<maxFeatures; i++)
+  U[i] = outputquad[i][0];
+  for(int i = 0; i<maxFeatures; i++)
+  U[i+4] = outputquad[i][1];
+
+  for(int i = 0; i<maxFeatures; i++)
+  {
+    X[i][0] = inputquad[i][0];
+    X[i][1] = inputquad[i][1];
+
+    X[i+4][3] = inputquad[i][0];
+    X[i+4][4] = inputquad[i][1];
+  }
+
+  for(int i = 0; i<maxFeatures; i++)
+  {
+    X[i][2] = 1;
+    X[i+4][5] = 1;
+  }
+
+  for(int i = 0; i<maxFeatures; i++)
+  {
+    X[i][6] = -X[i][0]*U[i];
+    X[i][7] = -X[i][1]*U[i];
+
+    X[i+4][6] = -X[i+4][3]*U[i+4];
+    X[i+4][7] = -X[i+4][4]*U[i+4];
+  }
+
+  //finding inverse of X matrix
+
+  float X_inverse[8][8] = {0};
+
+  if(!inverse2(X, X_inverse))
+  {
+  	cout<<err;//storing type of error for help in debugging
+        return;
+  }
+  multiply(X_inverse, U, C);
+
+  //construct transfMat from C
+
+
+
+    transfMat[0][0] = C[0];
+    transfMat[0][1] = C[1];
+    transfMat[0][2] = C[2];
+    transfMat[1][0] = C[3];
+    transfMat[1][1] = C[4];
+    transfMat[1][2] = C[5];
+    transfMat[2][0] = C[6];
+    transfMat[2][1] = C[7];
+    transfMat[2][2] = 1;
+
+}
+/* **************************************************************************************** */
+/*
+Applies a perspective transformation to an image.
+
+The function warpPerspective transforms the source image using the specified matrix:
+
+𝚍𝚜𝚝(x,y)=𝚜𝚛𝚌(M11x+M12y+M13M31x+M32y+M33,M21x+M22y+M23M31x+M32y+M33)
+
+*/
+
+//uses 3*3 transfMat from getPerspectiveTransform
+
+
+
+
+void warpPerspective(unsigned char next[H][W], unsigned char transframe[H][W], int transfMat[][3])
+{
+  int x,y;
+
+  for(int i =0; i<W; i++)
+  for(int j =0; j<H; j++)
+  {
+    x = (transfMat[0][0]*i + transfMat[0][1]*j + transfMat[0][2])/(transfMat[2][0]*i + transfMat[2][1]*j + transfMat[2][2]);
+    y = (transfMat[1][0]*i + transfMat[1][1]*j + transfMat[1][2])/(transfMat[2][0]*i + transfMat[2][1]*j + transfMat[2][2]);
+    transframe[i][j] = (unsigned char)(next[x][y]);
+  }
+}
 /************************************************************************************************************/
 
 typedef struct FEATURES
@@ -683,6 +771,19 @@ void shi_tomasi(FEATURES corners[maxFeatures], unsigned char Frame[H][W])
 }
 
 
+
+void computeDiff(unsigned char prevFrame[H][W], unsigned char currFrame[H][W])
+{
+	int SobelFilterSize = 3;
+
+	for (int y=SobelFilterSize ; y<H-SobelFilterSize ; ++y)
+		for (int x=SobelFilterSize ; x<W-SobelFilterSize ; ++x)
+			diffFrame[y][x] = abs(prevFrame[y][x] - currFrame[y][x]);
+
+}
+
+
+
 int main()
 {
     int x, y, count, count1=0;
@@ -735,14 +836,20 @@ int main()
 
         if(status[0]==1 && status[1]==1 && status[2]==1 && status[3]==1 ) // If there is no error in feature matching
         {
-					cout<<"frame number "<<count1<<endl;
-					cout<<"Input quad "<<endl;
-					for(int i =0; i<4; i++)
-					cout<<inputQuad[i][0]<<" "<<inputQuad[i][1]<<endl;
-				  cout<<"Output quad "<<endl;
-			    for(int i =0; i<4; i++)
-					cout<<outputQuad[i][0]<<" "<<outputQuad[i][1]<<endl;
+			// get transformation matrix
+			//transfMat = getPerspectiveTransform( outputQuad, inputQuad );
+			getPerspectiveTransform( inputQuad, outputQuad, transfMat);
+			// transform matFrame (current frame) into transFrame (transformed frame)
+			warpPerspective(matFrame, transFrame, transfMat);
 
+			// compute difference between refFrame (previous frame) and transFrame (transformed frame)
+			computeDiff(refFrame, transFrame);
+
+			// Write difference frame to the output pipe
+			//if (diffFrame.isContinuous())
+				fwrite(diffFrame, 1, H*W, pipeout);
+        	//else
+        		//printf("\nWrite to disk failed !!!\n");
 		}
 		else
 		{
