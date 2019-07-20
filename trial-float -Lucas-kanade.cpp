@@ -14,6 +14,8 @@ using namespace std;
 #define Threshold 1250000	// 5150000 for city drone video // 1250000 for beach highway drone video
 #define window 9
 
+#define vl 0.0832 //drone video length 0.791s. (0.791/19frames)*2 = 0.0832
+
 float Ix[H][W] = {0};
 float Iy[H][W] = {0};
 float Ixy[H][W] = {0};
@@ -486,7 +488,7 @@ void shi_tomasi(FEATURES corners[maxFeatures], unsigned char Frame[H][W])
 		}
 
 	// Find distinct corners
-  
+
 	for (y=SobelFilterSize+H/5 ; y<H-SobelFilterSize ; ++y)
 	{
 		for (x=SobelFilterSize ; x<W-SobelFilterSize ; ++x)
@@ -518,12 +520,12 @@ void shi_tomasi(FEATURES corners[maxFeatures], unsigned char Frame[H][W])
 				corners[featureIdx].x = x;
 				corners[featureIdx].y = y;
 				corners[featureIdx].value = minEigenval;
-        
+
 			}
 		}
 	}
 
-	
+
 }
 
 
@@ -586,6 +588,9 @@ int main()
 				  cout<<"Output quad "<<endl;
 			    for(int i =0; i<4; i++)
 					cout<<outputQuad[i][0]<<" "<<outputQuad[i][1]<<endl;
+          cout<<"result quad "<<endl;
+			    for(int i =0; i<4; i++)
+					cout<<(inputQuad[i][0] + outputQuad[i][0]*vl)<<" "<<(inputQuad[i][1] + outputQuad[i][1]*vl)<<endl;
 
 		}
 		else
